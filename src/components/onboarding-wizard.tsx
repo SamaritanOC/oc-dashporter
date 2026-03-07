@@ -36,12 +36,7 @@ type WizardStep = "model" | "channel" | "finishing";
 type ProviderId =
   | "anthropic"
   | "openai"
-  | "google"
-  | "openrouter"
-  | "groq"
-  | "xai"
-  | "mistral"
-  | "custom";
+  | "openrouter";
 
 type ChannelId = "telegram" | "discord" | "whatsapp";
 
@@ -58,11 +53,6 @@ type ProviderDef = {
   placeholder: string;
   helpUrl: string;
   helpSteps: string[];
-  /** Custom provider: API key is optional */
-  keyOptional?: boolean;
-  /** Custom provider: needs a base URL input */
-  needsBaseUrl?: boolean;
-  baseUrlPlaceholder?: string;
 };
 
 type ChannelDef = {
@@ -92,7 +82,7 @@ const PROVIDERS: ProviderDef[] = [
     id: "anthropic",
     label: "Anthropic",
     icon: "🟣",
-    defaultModel: "anthropic/claude-sonnet-4-20250514",
+    defaultModel: "anthropic/claude-opus-4-6-20260219",
     placeholder: "sk-ant-...",
     helpUrl: "https://console.anthropic.com/settings/keys",
     helpSteps: [
@@ -105,7 +95,7 @@ const PROVIDERS: ProviderDef[] = [
     id: "openai",
     label: "OpenAI",
     icon: "🟢",
-    defaultModel: "openai/gpt-4o",
+    defaultModel: "openai/gpt-5.3",
     placeholder: "sk-...",
     helpUrl: "https://platform.openai.com/api-keys",
     helpSteps: [
@@ -115,23 +105,10 @@ const PROVIDERS: ProviderDef[] = [
     ],
   },
   {
-    id: "google",
-    label: "Google",
-    icon: "🔵",
-    defaultModel: "google/gemini-2.0-flash",
-    placeholder: "AIza...",
-    helpUrl: "https://aistudio.google.com/app/apikey",
-    helpSteps: [
-      "Open Google AI Studio.",
-      "Choose Get API key.",
-      "Create a key and paste it here.",
-    ],
-  },
-  {
     id: "openrouter",
     label: "OpenRouter",
     icon: "🟠",
-    defaultModel: "openrouter/anthropic/claude-sonnet-4",
+    defaultModel: "openrouter/anthropic/claude-opus-4.6",
     placeholder: "sk-or-...",
     helpUrl: "https://openrouter.ai/keys",
     helpSteps: [
@@ -139,61 +116,6 @@ const PROVIDERS: ProviderDef[] = [
       "Create a key in the Keys section.",
       "Paste it here to fetch supported models.",
     ],
-  },
-  {
-    id: "groq",
-    label: "Groq",
-    icon: "⚡",
-    defaultModel: "groq/llama-3.3-70b-versatile",
-    placeholder: "gsk_...",
-    helpUrl: "https://console.groq.com/keys",
-    helpSteps: [
-      "Open the Groq Console.",
-      "Go to API Keys.",
-      "Create a key and paste it here.",
-    ],
-  },
-  {
-    id: "xai",
-    label: "xAI",
-    icon: "𝕏",
-    defaultModel: "xai/grok-3-mini",
-    placeholder: "xai-...",
-    helpUrl: "https://console.x.ai/",
-    helpSteps: [
-      "Open the xAI Console.",
-      "Find the API key section.",
-      "Create a key and paste it here.",
-    ],
-  },
-  {
-    id: "mistral",
-    label: "Mistral",
-    icon: "🌊",
-    defaultModel: "mistral/mistral-large-latest",
-    placeholder: "...",
-    helpUrl: "https://console.mistral.ai/api-keys/",
-    helpSteps: [
-      "Open the Mistral Console.",
-      "Go to API Keys.",
-      "Create a key and paste it here.",
-    ],
-  },
-  {
-    id: "custom",
-    label: "Custom / OpenAI-compatible",
-    icon: "🔗",
-    defaultModel: "",
-    placeholder: "Bearer token (optional for local endpoints)",
-    helpUrl: "",
-    helpSteps: [
-      "Enter your endpoint's base URL (e.g. http://localhost:1234/v1).",
-      "Add an API key if your endpoint requires authentication.",
-      "Models will be auto-detected from your server.",
-    ],
-    keyOptional: true,
-    needsBaseUrl: true,
-    baseUrlPlaceholder: "http://localhost:1234/v1",
   },
 ];
 
@@ -235,50 +157,37 @@ const STEP_IDS: Array<Exclude<WizardStep, "finishing">> = ["model", "channel"];
 
 const WELL_KNOWN_MODELS: Record<ProviderId, ModelItem[]> = {
   anthropic: [
+    { id: "anthropic/claude-opus-4-6-20260219", name: "Claude Opus 4.6" },
+    { id: "anthropic/claude-sonnet-4-6-20260219", name: "Claude Sonnet 4.6" },
     { id: "anthropic/claude-sonnet-4-20250514", name: "Claude Sonnet 4" },
-    { id: "anthropic/claude-opus-4-20250514", name: "Claude Opus 4" },
     { id: "anthropic/claude-haiku-4-5-20251001", name: "Claude Haiku 4.5" },
   ],
   openai: [
+    { id: "openai/gpt-5.3", name: "GPT-5.3" },
     { id: "openai/gpt-4o", name: "GPT-4o" },
     { id: "openai/gpt-4o-mini", name: "GPT-4o Mini" },
     { id: "openai/o3-mini", name: "o3-mini" },
   ],
-  google: [
-    { id: "google/gemini-2.5-pro-preview-05-06", name: "Gemini 2.5 Pro" },
-    { id: "google/gemini-2.0-flash", name: "Gemini 2.0 Flash" },
-    { id: "google/gemini-2.0-flash-lite", name: "Gemini 2.0 Flash Lite" },
-  ],
   openrouter: [
-    { id: "openrouter/anthropic/claude-sonnet-4", name: "Claude Sonnet 4" },
+    { id: "openrouter/anthropic/claude-opus-4.6", name: "Claude Opus 4.6" },
+    { id: "openrouter/anthropic/claude-sonnet-4.6", name: "Claude Sonnet 4.6" },
+    { id: "openrouter/openai/gpt-5.3", name: "GPT-5.3" },
     { id: "openrouter/openai/gpt-4o", name: "GPT-4o" },
-    { id: "openrouter/google/gemini-2.0-flash-001", name: "Gemini 2.0 Flash" },
+    { id: "openrouter/moonshot/kimi-2.5", name: "Kimi 2.5" },
+    { id: "openrouter/minimax/minimax-m2.5", name: "MiniMax M2.5" },
+    { id: "openrouter/google/gemini-2.5-pro", name: "Gemini 2.5 Pro" },
   ],
-  groq: [
-    { id: "groq/llama-3.3-70b-versatile", name: "Llama 3.3 70B Versatile" },
-    { id: "groq/llama-3.1-8b-instant", name: "Llama 3.1 8B Instant" },
-    { id: "groq/mixtral-8x7b-32768", name: "Mixtral 8x7B" },
-  ],
-  xai: [
-    { id: "xai/grok-3-mini", name: "Grok 3 Mini" },
-    { id: "xai/grok-3", name: "Grok 3" },
-    { id: "xai/grok-2-1212", name: "Grok 2" },
-  ],
-  mistral: [
-    { id: "mistral/mistral-large-latest", name: "Mistral Large" },
-    { id: "mistral/mistral-small-latest", name: "Mistral Small" },
-    { id: "mistral/codestral-latest", name: "Codestral" },
-  ],
-  custom: [],
 };
 
 const RECOMMENDED_MODEL_MATCHERS = [
-  "anthropic/claude-sonnet-4-5",
+  "anthropic/claude-opus-4-6",
+  "anthropic/claude-sonnet-4-6",
   "anthropic/claude-sonnet-4",
+  "openai/gpt-5.3",
   "openai/gpt-4o",
-  "google/gemini-2.5-pro",
-  "google/gemini-2.0-flash",
-  "groq/llama-3.3-70b-versatile",
+  "openrouter/anthropic/claude-opus-4.6",
+  "openrouter/openai/gpt-5.3",
+  "openrouter/moonshot/kimi-2.5",
 ];
 
 function isRecommendedModel(modelId: string) {
@@ -445,7 +354,7 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [model, setModel] = useState(PROVIDERS[0].defaultModel);
-  const [customBaseUrl, setCustomBaseUrl] = useState("");
+  const customBaseUrl = "";
   const [testingKey, setTestingKey] = useState(false);
   const [keyValid, setKeyValid] = useState<boolean | null>(null);
   const [keyError, setKeyError] = useState<string | null>(null);
@@ -468,7 +377,10 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
     "idle" | "validating" | "saving" | "restarting" | "ready"
   >("idle");
   const [botName, setBotName] = useState("");
+  const [botUsername, setBotUsername] = useState("");
   const [pairingTimeout, setPairingTimeout] = useState(false);
+  const [pairingError, setPairingError] = useState<string | null>(null);
+  const [healthProgress, setHealthProgress] = useState(0);
 
   const [launchError, setLaunchError] = useState<string | null>(null);
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
@@ -539,33 +451,6 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
     }
   }, []);
 
-  const fetchCustomModels = useCallback(async (baseUrl: string, token: string) => {
-    const seq = ++modelFetchSeqRef.current;
-    setLoadingModels(true);
-    try {
-      const res = await fetch("/api/onboard", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "list-models", provider: "custom", baseUrl, token }),
-      });
-      const data = await res.json();
-      if (seq !== modelFetchSeqRef.current) return;
-      if (data.ok && Array.isArray(data.models)) {
-        setLiveModels(data.models as ModelItem[]);
-        // Auto-select first model if none selected
-        if (data.models.length > 0 && !model) {
-          setModel((data.models[0] as ModelItem).id);
-        }
-      } else {
-        setLiveModels([]);
-      }
-    } catch {
-      if (seq === modelFetchSeqRef.current) setLiveModels([]);
-    } finally {
-      if (seq === modelFetchSeqRef.current) setLoadingModels(false);
-    }
-  }, [model]);
-
   useEffect(() => {
     if (validateTimerRef.current) clearTimeout(validateTimerRef.current);
     const seq = ++validationSeqRef.current;
@@ -577,62 +462,7 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
     setLiveModels([]);
     setLoadingModels(false);
 
-    // Custom provider: validate by probing the base URL
-    if (provider === "custom") {
-      if (!customBaseUrl.trim() || customBaseUrl.trim().length < 8) return;
-
-      validateTimerRef.current = setTimeout(async () => {
-        setTestingKey(true);
-        try {
-          const res = await fetch("/api/onboard", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              action: "test-key",
-              provider: "custom",
-              baseUrl: customBaseUrl.trim(),
-              token: apiKey.trim() || "",
-            }),
-          });
-          const data = await res.json();
-          if (seq !== validationSeqRef.current) return;
-
-          if (data.ok) {
-            setKeyValid(true);
-            setKeyError(null);
-            // Models may already be in the response
-            if (Array.isArray(data.models) && data.models.length > 0) {
-              const models = data.models.map((m: { id: string; name?: string }) => ({
-                id: m.id.includes("/") ? m.id : `custom/${m.id}`,
-                name: m.name || m.id,
-              }));
-              setLiveModels(models);
-              if (models.length > 0 && !model) {
-                setModel(models[0].id);
-              }
-              setLoadingModels(false);
-            } else {
-              await fetchCustomModels(customBaseUrl.trim(), apiKey.trim());
-            }
-          } else {
-            setKeyValid(false);
-            setKeyError(data.error || "Could not connect to endpoint.");
-          }
-        } catch (error) {
-          if (seq !== validationSeqRef.current) return;
-          setKeyValid(false);
-          setKeyError(error instanceof Error ? error.message : "Connection failed.");
-        } finally {
-          if (seq === validationSeqRef.current) setTestingKey(false);
-        }
-      }, 800);
-
-      return () => {
-        if (validateTimerRef.current) clearTimeout(validateTimerRef.current);
-      };
-    }
-
-    // Standard providers: validate API key
+    // Validate API key
     if (apiKey.trim().length < 8) return;
 
     validateTimerRef.current = setTimeout(async () => {
@@ -668,7 +498,7 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
     return () => {
       if (validateTimerRef.current) clearTimeout(validateTimerRef.current);
     };
-  }, [apiKey, customBaseUrl, fetchCustomModels, fetchLiveModels, model, provider]);
+  }, [apiKey, fetchLiveModels, model, provider]);
 
   useEffect(() => {
     if (!connectedChannel) {
@@ -700,6 +530,13 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
     };
   }, [connectedChannel]);
 
+  // Cleanup pairing timeout timer on unmount (Bug 6)
+  useEffect(() => {
+    return () => {
+      if (pairingTimeoutRef.current) clearTimeout(pairingTimeoutRef.current);
+    };
+  }, []);
+
   const handleProviderChange = useCallback((nextProvider: ProviderId) => {
     const nextDef = PROVIDERS.find((entry) => entry.id === nextProvider) || PROVIDERS[0];
     validationSeqRef.current += 1;
@@ -712,7 +549,6 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
     setKeyError(null);
     setLiveModels([]);
     setLoadingModels(false);
-    setCustomBaseUrl("");
   }, []);
 
   const saveCredentials = useCallback(async () => {
@@ -722,9 +558,6 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
       apiKey: apiKey.trim(),
       model,
     };
-    if (provider === "custom" && customBaseUrl.trim()) {
-      payload.baseUrl = customBaseUrl.trim();
-    }
     const res = await fetch("/api/onboard", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -734,7 +567,7 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
     if (!res.ok || data.ok === false) {
       throw new Error(data.error || "Could not save your API credentials.");
     }
-  }, [apiKey, customBaseUrl, model, provider]);
+  }, [apiKey, model, provider]);
 
   const continueToChannelStep = useCallback(async () => {
     try {
@@ -747,10 +580,15 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
   }, [saveCredentials]);
 
   const waitForGatewayHealth = useCallback(async (maxAttempts = 15): Promise<boolean> => {
+    setHealthProgress(0);
     for (let i = 0; i < maxAttempts; i++) {
+      setHealthProgress(Math.round(((i + 1) / maxAttempts) * 100));
       try {
         const res = await fetch("/api/channels/health", { cache: "no-store" });
-        if (res.ok) return true;
+        if (res.ok) {
+          setHealthProgress(100);
+          return true;
+        }
       } catch { /* retry */ }
       await new Promise((r) => setTimeout(r, 2000));
     }
@@ -780,6 +618,7 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
         throw new Error(valData.error || "Token validation failed.");
       }
       if (valData.botName) setBotName(valData.botName);
+      if (valData.botUsername) setBotUsername(valData.botUsername);
 
       // Phase 2: Save config
       setConnectPhase("saving");
@@ -831,6 +670,7 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
 
   const handleApprovePairing = useCallback(async (request: PairingRequest) => {
     setApprovingCode(request.code);
+    setPairingError(null);
     try {
       const res = await fetch("/api/pairing", {
         method: "POST",
@@ -846,8 +686,8 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
         next.add(request.code);
         return next;
       });
-    } catch {
-      // Keep the card as-is if approval fails.
+    } catch (err) {
+      setPairingError(err instanceof Error ? err.message : "Could not approve. Check your connection and try again.");
     } finally {
       setApprovingCode(null);
     }
@@ -863,9 +703,6 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
         apiKey: apiKey.trim(),
         model,
       };
-      if (provider === "custom" && customBaseUrl.trim()) {
-        payload.baseUrl = customBaseUrl.trim();
-      }
       const res = await fetch("/api/onboard", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -885,7 +722,7 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
     } catch (error) {
       setLaunchError(error instanceof Error ? error.message : "Setup failed.");
     }
-  }, [apiKey, customBaseUrl, model, onComplete, provider, router]);
+  }, [apiKey, model, onComplete, provider, router]);
 
   const finishSetup = useCallback(() => {
     setStep("finishing");
@@ -901,14 +738,15 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
     setApprovedCodes(new Set());
     setConnectPhase("idle");
     setBotName("");
+    setBotUsername("");
     setPairingTimeout(false);
+    setPairingError(null);
+    setHealthProgress(0);
     if (pairingTimeoutRef.current) clearTimeout(pairingTimeoutRef.current);
   }, []);
 
   const visibleStepIndex = step === "model" ? 0 : step === "channel" ? 1 : 1;
-  const continueDisabled = provider === "custom"
-    ? (!customBaseUrl.trim() || testingKey || keyValid !== true || status?.installed === false)
-    : (!apiKey.trim() || testingKey || keyValid !== true || status?.installed === false);
+  const continueDisabled = !apiKey.trim() || testingKey || keyValid !== true || status?.installed === false;
   const onboardingBlocked = status?.installed === false;
   const approvalComplete = approvedCodes.size > 0;
 
@@ -1012,27 +850,10 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
                     ) : null}
                   </div>
 
-                  {currentProvider.needsBaseUrl && (
-                    <div className="space-y-2">
-                      <label className="text-xs font-medium text-muted-foreground">Endpoint URL</label>
-                      <input
-                        type="url"
-                        value={customBaseUrl}
-                        onChange={(event) => setCustomBaseUrl(event.target.value)}
-                        placeholder={currentProvider.baseUrlPlaceholder || "http://localhost:1234/v1"}
-                        autoComplete="off"
-                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/40 focus:border-primary/50"
-                      />
-                      <p className="text-xs text-muted-foreground/50">
-                        Works with NVIDIA NIM, vLLM, Ollama, LM Studio, or any OpenAI-compatible server.
-                      </p>
-                    </div>
-                  )}
-
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <label className="text-xs font-medium text-muted-foreground">
-                        API Key{currentProvider.keyOptional ? " (optional)" : ""}
+                        API Key
                       </label>
                       <div className="group relative inline-flex items-center">
                         <ShieldCheck className="h-3 w-3 text-emerald-500/60" />
@@ -1207,28 +1028,15 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
                             <span className="flex items-center gap-1.5">
                               <TypingDots size="sm" className="text-current" />
                               <span>
-                                {connectPhase === "validating" ? "Validating..." :
-                                 connectPhase === "saving" ? "Saving..." :
-                                 connectPhase === "restarting" ? "Starting..." :
+                                {connectPhase === "validating" ? "Checking token..." :
+                                 connectPhase === "saving" ? "Saving config..." :
+                                 connectPhase === "restarting" ? `Starting gateway${healthProgress > 0 ? ` (${healthProgress}%)` : ""}...` :
                                  "Connecting..."}
                               </span>
                             </span>
                           ) : "Connect"}
                         </button>
                       </div>
-                      {channelResult?.type === "success" ? (
-                        <p className="text-xs text-emerald-400">{channelResult.message}</p>
-                      ) : null}
-                      {channelResult?.type === "success" && connectedChannel === "telegram" && (
-                        <a
-                          href={`https://t.me/${channelResult.message.match(/@(\w+)/)?.[1] || ""}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
-                        >
-                          <ExternalLink className="h-3 w-3" /> Open in Telegram to test
-                        </a>
-                      )}
                       {channelResult?.type === "error" ? (
                         <p className="text-xs text-red-400">Error: {channelResult.message}</p>
                       ) : null}
@@ -1324,6 +1132,16 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
                     <p className="text-sm font-medium text-emerald-300">
                       {connectedChannelDef.icon} {connectedChannelDef.label} connected{botName ? ` (${botName})` : ""}
                     </p>
+                    {connectedChannel === "telegram" && botUsername && (
+                      <a
+                        href={`https://t.me/${botUsername}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                      >
+                        <ExternalLink className="h-3 w-3" /> Open @{botUsername} in Telegram
+                      </a>
+                    )}
                   </div>
 
                   {/* Prompt user to text the bot */}
@@ -1347,8 +1165,14 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
                         </div>
                         {pairingTimeout && (
                           <div className="rounded-md border border-amber-500/20 bg-amber-500/10 px-2.5 py-2 text-xs text-amber-300">
-                            No pairing request detected yet. Make sure you sent a message to the correct bot.
+                            No pairing request detected yet. Make sure you sent a message to the correct bot
+                            {connectedChannel === "telegram" && botUsername ? ` (@${botUsername})` : ""}.
                             {" "}If the problem persists, go back and re-enter the token.
+                          </div>
+                        )}
+                        {pairingError && (
+                          <div className="rounded-md border border-red-500/20 bg-red-500/10 px-2.5 py-2 text-xs text-red-300">
+                            {pairingError}
                           </div>
                         )}
                       </div>
@@ -1521,15 +1345,53 @@ export function OnboardingWizard({ onComplete }: { onComplete?: () => void }) {
         <QrLoginModal
           channel={qrChannel}
           onClose={() => setShowQrModal(false)}
-          onSuccess={() => {
+          onSuccess={async () => {
+            setShowQrModal(false);
             setSelectedChannel(qrChannel);
-            setConnectedChannel(qrChannel);
-            setChannelResult({
-              type: "success",
-              message: `${getChannelLabel(qrChannel)} connected successfully!`,
-            });
-            setApprovedCodes(new Set());
-            setPairingRequests([]);
+            setChannelBusy(true);
+            setConnectPhase("saving");
+
+            try {
+              // Enable WhatsApp in gateway config
+              const res = await fetch("/api/channels", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "connect", channel: qrChannel }),
+              });
+              const data = await res.json();
+              if (!res.ok || data.ok === false) {
+                throw new Error(data.error || "Could not enable WhatsApp in config.");
+              }
+
+              // Wait for gateway restart
+              setConnectPhase("restarting");
+              const healthy = await waitForGatewayHealth();
+              if (!healthy) {
+                throw new Error("Gateway did not come back online. Check the logs.");
+              }
+
+              setConnectPhase("ready");
+              setConnectedChannel(qrChannel);
+              setChannelResult({
+                type: "success",
+                message: `${getChannelLabel(qrChannel)} connected successfully!`,
+              });
+              setApprovedCodes(new Set());
+              setPairingRequests([]);
+
+              // Start 2-minute pairing timeout
+              pairingTimeoutRef.current = setTimeout(() => {
+                setPairingTimeout(true);
+              }, 120000);
+            } catch (error) {
+              setConnectPhase("idle");
+              setChannelResult({
+                type: "error",
+                message: error instanceof Error ? error.message : "Could not enable WhatsApp.",
+              });
+            } finally {
+              setChannelBusy(false);
+            }
           }}
         />
       )}

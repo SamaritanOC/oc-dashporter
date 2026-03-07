@@ -292,7 +292,7 @@ export function PairingNotifications() {
     }
   }, []);
 
-  // Initial fetch + poll every 15s
+  // Initial fetch + poll every 5s
   useEffect(() => {
     fetchData();
     pollRef.current = setInterval(() => {

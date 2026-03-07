@@ -38,13 +38,15 @@ export function QrLoginModal({
   const eventSourceRef = useRef<EventSource | null>(null);
   const mountedRef = useRef(true);
   const notifiedSuccessRef = useRef(false);
+  const onSuccessRef = useRef(onSuccess);
+  onSuccessRef.current = onSuccess;
 
   const finishSuccess = useCallback(() => {
     if (notifiedSuccessRef.current) return;
     notifiedSuccessRef.current = true;
     setState("success");
-    onSuccess?.();
-  }, [onSuccess]);
+    onSuccessRef.current?.();
+  }, []);
 
   const closeStream = useCallback(() => {
     eventSourceRef.current?.close();
@@ -118,7 +120,8 @@ export function QrLoginModal({
             return;
         }
       } catch {
-        // Ignore malformed stream payloads.
+        // Log but don't crash on malformed payloads
+        setLogs((prev) => [...prev.slice(-49), "[warning] Received malformed data from server"]);
       }
     };
 
