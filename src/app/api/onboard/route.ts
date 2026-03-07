@@ -15,9 +15,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { access, readFile, writeFile, mkdir } from "fs/promises";
 import { join, dirname } from "path";
-import { gatewayCall, runCli } from "@/lib/openclaw";
+import { runCli } from "@/lib/openclaw";
 import { patchConfig } from "@/lib/gateway-config";
-import { getOpenClawBin, getOpenClawHome, getGatewayUrl } from "@/lib/paths";
+import { getOpenClawBin, getOpenClawHome, getDefaultWorkspace, getGatewayUrl } from "@/lib/paths";
 import {
   buildProviderCredentialPatch,
   fetchModelsFromProvider,
@@ -640,6 +640,40 @@ export async function POST(request: NextRequest) {
           }
         } else {
           steps.push("Gateway running");
+        }
+
+        // 5. Scaffold workspace via `openclaw onboard --non-interactive`.
+        //    The onboard command initializes openclaw.json and the agent
+        //    workspace with all foundational files. We skip channels, daemon,
+        //    health, skills, and UI since those are already handled above or
+        //    are not needed during quick-setup.
+        try {
+          const workspace = await getDefaultWorkspace();
+          const workspaceExists = await fileExists(join(workspace, "SOUL.md"));
+          if (!workspaceExists) {
+            try {
+              await runCli(
+                [
+                  "onboard",
+                  "--non-interactive",
+                  "--accept-risk",
+                  "--workspace", workspace,
+                  "--skip-channels",
+                  "--skip-daemon",
+                  "--skip-health",
+                  "--skip-skills",
+                  "--skip-ui",
+                  "--auth-choice", "skip",
+                ],
+                30000,
+              );
+              steps.push("Workspace initialized");
+            } catch (setupErr) {
+              steps.push(`Warning: could not initialize workspace: ${setupErr}`);
+            }
+          }
+        } catch (err) {
+          steps.push(`Warning: could not initialize workspace: ${err}`);
         }
 
         return NextResponse.json({
