@@ -203,10 +203,16 @@ export async function GET() {
     // gateway may be unavailable
   }
 
-  return NextResponse.json({
+  const body = {
     dm: dmRequests,
     devices: deviceRequests,
     total: dmRequests.length + deviceRequests.length,
+  };
+  return NextResponse.json(body, {
+    headers: {
+      "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+      Pragma: "no-cache",
+    },
   });
 }
 

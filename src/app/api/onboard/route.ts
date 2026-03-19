@@ -7,18 +7,20 @@
  * POST /api/onboard
  *   { action: "validate-key", provider, token }
  *   { action: "list-models",  provider, token }
- *   { action: "save-and-restart", openrouterKey, model, telegramToken }
+ *   { action: "save-and-restart", provider, apiKey, model, telegramToken?, discordToken? }
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { access, readFile } from "fs/promises";
-import { join } from "path";
-import { runCli, runCliCaptureBoth } from "@/lib/openclaw";
+import { access, readFile, writeFile, mkdir } from "fs/promises";
+import { join, dirname } from "path";
+import { runCli, runCliCaptureBoth, gatewayCall } from "@/lib/openclaw";
 import { getOpenClawBin, getOpenClawHome, getGatewayUrl } from "@/lib/paths";
+import { patchConfig } from "@/lib/gateway-config";
 import {
   PROVIDER_ENV_KEYS,
   validateProviderToken,
   fetchModelsFromProvider,
+  buildProviderCredentialPatch,
 } from "@/lib/provider-auth";
 
 export const dynamic = "force-dynamic";
@@ -264,132 +266,176 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        // Map provider id to openclaw onboard --auth-choice and --*-api-key flag
-        const PROVIDER_ONBOARD_MAP: Record<string, { authChoice: string; keyFlag: string }> = {
-          openrouter: { authChoice: "openrouter-api-key", keyFlag: "--openrouter-api-key" },
-          openai: { authChoice: "openai-api-key", keyFlag: "--openai-api-key" },
-          anthropic: { authChoice: "apiKey", keyFlag: "--anthropic-api-key" },
-        };
-
-        const providerConfig = PROVIDER_ONBOARD_MAP[provider];
-        if (!providerConfig) {
+        const envKey = PROVIDER_ENV_KEYS[provider];
+        if (!envKey) {
           return NextResponse.json(
             { ok: false, error: `Unsupported provider: ${provider}` },
             { status: 400 },
           );
         }
 
-        // Step 1: Run `openclaw onboard --non-interactive` to bootstrap
-        // config, workspace, gateway auth, daemon install & start.
-        const onboardArgs = [
-          "onboard",
-          "--non-interactive",
-          "--accept-risk",
-          "--mode", "local",
-          "--auth-choice", providerConfig.authChoice,
-          providerConfig.keyFlag, apiKeyValue,
-          "--secret-input-mode", "plaintext",
-          "--install-daemon",
-          "--daemon-runtime", "node",
-          "--skip-channels",
-          "--skip-skills",
-          "--skip-search",
-          "--skip-ui",
-        ];
+        const home = getOpenClawHome();
+        const configPath = join(home, "openclaw.json");
+        const configExists = await fileExists(configPath);
+        const isHosted =
+          process.env.AGENTBAY_HOSTED === "true" ||
+          process.env.NEXT_PUBLIC_AGENTBAY_HOSTED === "true";
+        const hasChannels = Boolean(telegramToken || discordToken);
 
-        try {
-          const onboardResult = await runCliCaptureBoth(onboardArgs, 60000);
-          if (onboardResult.code !== 0) {
-            const detail = String(onboardResult.stderr || onboardResult.stdout || "").trim();
-            return NextResponse.json(
-              { ok: false, error: `Onboard failed: ${detail || `exit code ${onboardResult.code}`}` },
-              { status: 500 },
-            );
+        // ── Step 1: Bootstrap config/workspace/daemon (only when no config yet) ──
+        if (!configExists) {
+          const onboardArgs = [
+            "onboard",
+            "--non-interactive",
+            "--accept-risk",
+            "--mode", "local",
+            "--auth-choice", "skip",
+            "--skip-channels",
+            "--skip-skills",
+            "--skip-search",
+            "--skip-ui",
+          ];
+          if (isHosted) {
+            onboardArgs.push("--skip-health");
+          } else {
+            onboardArgs.push("--install-daemon", "--daemon-runtime", "node");
           }
-        } catch (err) {
-          return NextResponse.json(
-            { ok: false, error: `Onboard failed: ${err instanceof Error ? err.message : err}` },
-            { status: 500 },
-          );
-        }
 
-        // Step 2: Set the chosen model (onboard doesn't set this)
-        try {
-          const modelResult = await runCliCaptureBoth(
-            ["config", "set", "agents.defaults.model.primary", model],
-            10000,
-          );
-          if (modelResult.code !== 0) {
-            const detail = String(modelResult.stderr || modelResult.stdout || "").trim();
-            return NextResponse.json(
-              { ok: false, error: `Model config failed: ${detail || `exit code ${modelResult.code}`}` },
-              { status: 500 },
-            );
-          }
-        } catch (err) {
-          return NextResponse.json(
-            { ok: false, error: `Model config failed: ${err instanceof Error ? err.message : err}` },
-            { status: 500 },
-          );
-        }
-
-        // Step 3: Configure channels + restart gateway
-        const channelCmds: string[][] = [];
-
-        if (telegramToken) {
-          channelCmds.push(
-            ["config", "set", "channels.telegram.enabled", "true"],
-            ["config", "set", "channels.telegram.botToken", telegramToken],
-            ["config", "set", "channels.telegram.dmPolicy", "pairing"],
-            ["config", "set", "channels.telegram.groupPolicy", "disabled"],
-          );
-        }
-
-        if (discordToken) {
-          channelCmds.push(
-            ["config", "set", "channels.discord.enabled", "true"],
-            ["config", "set", "channels.discord.token", discordToken],
-            ["config", "set", "channels.discord.dmPolicy", "pairing"],
-            ["config", "set", "channels.discord.groupPolicy", "disabled"],
-          );
-        }
-
-        if (channelCmds.length > 0) {
-          for (const cmd of channelCmds) {
-            try {
-              const result = await runCliCaptureBoth(cmd, 10000);
-              if (result.code !== 0) {
-                const detail = String(result.stderr || result.stdout || "").trim();
-                return NextResponse.json(
-                  { ok: false, error: `Channel config failed (${cmd[2]}): ${detail || `exit code ${result.code}`}` },
-                  { status: 500 },
-                );
-              }
-            } catch (err) {
+          try {
+            const onboardResult = await runCliCaptureBoth(onboardArgs, 60000);
+            if (onboardResult.code !== 0) {
+              const detail = String(onboardResult.stderr || onboardResult.stdout || "").trim();
               return NextResponse.json(
-                { ok: false, error: `Channel config failed: ${err instanceof Error ? err.message : err}` },
+                { ok: false, error: `Bootstrap failed: ${detail || `exit code ${onboardResult.code}`}` },
                 { status: 500 },
               );
             }
-          }
-
-          // Restart gateway to pick up channel config
-          try {
-            await runCli(["gateway", "restart"], 25000);
-          } catch {
-            // restart may fail transiently — gateway may self-recover
+          } catch (err) {
+            return NextResponse.json(
+              { ok: false, error: `Bootstrap failed: ${err instanceof Error ? err.message : err}` },
+              { status: 500 },
+            );
           }
         }
 
-        // Step 4: Wait for gateway to be healthy
+        // ── Step 2: Wait for gateway to be healthy ──
         const gatewayUrl = await getGatewayUrl();
-        for (let i = 0; i < 10; i++) {
-          await new Promise((r) => setTimeout(r, 1500));
+        let gatewayReady = false;
+        for (let i = 0; i < 15; i++) {
           const health = await checkGatewayHealth(gatewayUrl);
-          if (health.running) break;
+          if (health.running) { gatewayReady = true; break; }
+          await new Promise((r) => setTimeout(r, 1500));
         }
 
-        return NextResponse.json({ ok: true });
+        // ── Step 3: Build unified config patch ──
+        const patch: Record<string, unknown> = buildProviderCredentialPatch(provider, apiKeyValue);
+        patch.agents = { defaults: { model: { primary: model } } };
+
+        if (telegramToken) {
+          const channels = (patch.channels ?? {}) as Record<string, unknown>;
+          channels.telegram = { enabled: true, botToken: telegramToken, dmPolicy: "pairing" };
+          patch.channels = channels;
+        }
+        if (discordToken) {
+          const channels = (patch.channels ?? {}) as Record<string, unknown>;
+          channels.discord = { enabled: true, token: discordToken, dmPolicy: "pairing" };
+          patch.channels = channels;
+        }
+
+        // ── Step 3a: Apply via gateway RPC (preferred — atomic + live reload) ──
+        let patchMethod = "";
+        if (gatewayReady) {
+          try {
+            await patchConfig(patch, { restartDelayMs: hasChannels ? 2000 : 0 });
+            patchMethod = "gateway";
+          } catch (err) {
+            console.error("patchConfig RPC failed, will try disk fallback:", err);
+          }
+        }
+
+        // ── Step 3b: Disk-write fallback (if gateway unavailable or RPC failed) ──
+        if (!patchMethod) {
+          try {
+            let config: Record<string, unknown> = {};
+            try { config = JSON.parse(await readFile(configPath, "utf-8")); } catch { /* fresh */ }
+
+            const env = (config.env || {}) as Record<string, unknown>;
+            env[envKey] = apiKeyValue;
+            config.env = env;
+
+            const auth = (config.auth || {}) as Record<string, unknown>;
+            const profiles = (auth.profiles || {}) as Record<string, unknown>;
+            profiles[`${provider}:default`] = { provider, mode: "api_key" };
+            auth.profiles = profiles;
+            config.auth = auth;
+
+            const agents = (config.agents || {}) as Record<string, unknown>;
+            const defaults = (agents.defaults || {}) as Record<string, unknown>;
+            defaults.model = { primary: model };
+            agents.defaults = defaults;
+            config.agents = agents;
+
+            if (telegramToken) {
+              const channels = (config.channels || {}) as Record<string, unknown>;
+              channels.telegram = { enabled: true, botToken: telegramToken, dmPolicy: "pairing" };
+              config.channels = channels;
+            }
+            if (discordToken) {
+              const channels = (config.channels || {}) as Record<string, unknown>;
+              channels.discord = { enabled: true, token: discordToken, dmPolicy: "pairing" };
+              config.channels = channels;
+            }
+
+            await mkdir(dirname(configPath), { recursive: true });
+            await writeFile(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8");
+            patchMethod = "disk";
+          } catch (err) {
+            return NextResponse.json(
+              { ok: false, error: `Config save failed: ${err instanceof Error ? err.message : err}` },
+              { status: 500 },
+            );
+          }
+        }
+
+        // ── Step 4: If channels configured, poll until channel is running ──
+        if (hasChannels && gatewayReady) {
+          const targetChannel = telegramToken ? "telegram" : "discord";
+          for (let i = 0; i < 12; i++) {
+            await new Promise((r) => setTimeout(r, 1500));
+            try {
+              const status = await gatewayCall<Record<string, unknown>>("channels.status", {}, 8000);
+              const channels = status && typeof status === "object"
+                ? (status as Record<string, unknown>).channels : null;
+              if (channels && typeof channels === "object") {
+                const ch = (channels as Record<string, unknown>)[targetChannel];
+                if (ch && typeof ch === "object" && (ch as Record<string, unknown>).running === true) break;
+              }
+            } catch {
+              // gateway may still be restarting after config.patch
+            }
+          }
+        }
+
+        // ── Step 5: Verify config was applied ──
+        if (gatewayReady && patchMethod === "gateway") {
+          try {
+            const cfg = await gatewayCall<Record<string, unknown>>("config.get", undefined, 8000);
+            const resolved = cfg && typeof cfg === "object" && typeof (cfg as Record<string, unknown>).resolved === "object"
+              ? (cfg as Record<string, unknown>).resolved as Record<string, unknown>
+              : null;
+            if (resolved) {
+              const savedEnv = resolved.env as Record<string, unknown> | undefined;
+              const savedKey = savedEnv?.[envKey];
+              if (!savedKey || typeof savedKey !== "string" || !savedKey.trim()) {
+                console.warn("Config verification: API key not found in resolved config after patchConfig");
+              }
+            }
+          } catch {
+            // non-fatal — config was already patched
+          }
+        }
+
+        return NextResponse.json({ ok: true, method: patchMethod });
       }
 
       /* ── get-bot-info ─────────────────────────────── */

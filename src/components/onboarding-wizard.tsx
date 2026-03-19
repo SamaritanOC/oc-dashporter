@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef, type CSSProperties } from "react";
 import { useSmartPoll } from "@/hooks/use-smart-poll";
 import {
+  AlertTriangle,
   Check,
   ChevronRight,
   ChevronLeft,
@@ -197,8 +198,11 @@ export function OnboardingWizard({ onComplete }: Props) {
   const [approving, setApproving] = useState<string | null>(null);
   const [approved, setApproved] = useState(false);
   const [botNames, setBotNames] = useState<Record<string, string>>({});
+  const [pairingPollError, setPairingPollError] = useState(false);
+  const [pairingRefreshing, setPairingRefreshing] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const autoValidateRef = useRef<((p: string, key: string) => void) | null>(null);
 
   const selectedProvider = PROVIDERS.find((p) => p.id === provider)!;
@@ -290,11 +294,10 @@ export function OnboardingWizard({ onComplete }: Props) {
     setSaving(true);
     setSaveProgress(0);
     setError(null);
+    setSaveError(null);
 
-    // Animate progress bar over ~25s (gateway can take 15-30s)
     saveProgressRef.current = setInterval(() => {
       setSaveProgress((prev) => {
-        // Ease toward 90 then stall — actual completion moves it to 100
         if (prev >= 90) return prev;
         const remaining = 90 - prev;
         return prev + remaining * 0.035;
@@ -316,7 +319,7 @@ export function OnboardingWizard({ onComplete }: Props) {
       });
       const data = await res.json();
       if (!data.ok) {
-        setError(data.error ?? "Failed to save configuration.");
+        setSaveError(data.error ?? "Failed to save configuration.");
         return;
       }
       setSaveProgress(100);
@@ -328,7 +331,7 @@ export function OnboardingWizard({ onComplete }: Props) {
         completeOnboarding();
       }, 300);
     } catch {
-      setError("Network error. Please try again.");
+      setSaveError("Network error while saving. Please try again.");
     } finally {
       if (saveProgressRef.current) clearInterval(saveProgressRef.current);
       setSaving(false);
@@ -358,21 +361,33 @@ export function OnboardingWizard({ onComplete }: Props) {
 
   const configuredChannels = CHANNELS.filter((c) => channelTokens[c.id]?.trim());
 
-  const fetchPairing = useCallback(async () => {
+  const fetchPairing = useCallback(async (showRefreshing = false) => {
+    if (showRefreshing) setPairingRefreshing(true);
     try {
-      const res = await fetch("/api/pairing");
+      // Cache-bust so browsers/proxies never return a stale empty list
+      const res = await fetch(`/api/pairing?_=${Date.now()}`, {
+        cache: "no-store",
+        headers: { Pragma: "no-cache" },
+      });
+      if (!res.ok) throw new Error(`Pairing API ${res.status}`);
       const data = await res.json();
-      const configured = CHANNELS.filter((c) => channelTokens[c.id]?.trim()).map((c) => c.id);
-      const relevantDm = (data.dm || []).filter(
-        (r: DmRequest) => configured.some((ch) => isMatchingChannel(r.channel, ch)),
-      );
-      setPairingRequests(relevantDm);
+      const allDm = data.dm || [];
+      // On step 3 always show all DM requests so pending Telegram (etc.) is never hidden
+      setPairingRequests(allDm);
+      setPairingPollError(false);
     } catch {
-      // silent
+      setPairingPollError(true);
+    } finally {
+      if (showRefreshing) setPairingRefreshing(false);
     }
-  }, [channelTokens]);
+  }, []);
 
   useSmartPoll(fetchPairing, { intervalMs: 5000, enabled: step === 3 });
+
+  // Fetch pairing requests immediately when entering step 3 so the list is not empty on first paint
+  useEffect(() => {
+    if (step === 3) void fetchPairing();
+  }, [step, fetchPairing]);
 
   useEffect(() => {
     if (step !== 3) return;
@@ -489,7 +504,7 @@ export function OnboardingWizard({ onComplete }: Props) {
         {/* Divider */}
         <div className="h-px bg-stone-100 dark:bg-[#23282e]" />
 
-        <div className="px-8 py-7">
+        <div className="px-8 py-7 max-h-[min(70vh,520px)] overflow-y-auto overscroll-contain">
           {step === 1 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="space-y-0.5">
@@ -733,9 +748,33 @@ export function OnboardingWizard({ onComplete }: Props) {
                 )}
               </div>
 
+              {saveError && !saving && (
+                <div className="rounded-xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 p-3.5 animate-in fade-in duration-300">
+                  <div className="flex items-start gap-2.5">
+                    <AlertTriangle className="h-4 w-4 shrink-0 text-red-500 dark:text-red-400 mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-red-700 dark:text-red-300">
+                        Configuration failed
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-red-600 dark:text-red-400/90">
+                        {saveError}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSaveError(null)}
+                      className="shrink-0 text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-300"
+                    >
+                      <span className="sr-only">Dismiss</span>
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center justify-between gap-2 pt-1">
                 <button
-                  onClick={() => { setError(null); setStep(2); }}
+                  onClick={() => { setError(null); setSaveError(null); setStep(2); }}
                   disabled={!validated || !selectedModel || saving || validating}
                   className="rounded-lg px-3 py-2 text-xs font-medium text-stone-500 dark:text-[#a8b0ba] ring-1 ring-stone-200 dark:ring-[#2c343d] hover:bg-stone-100 dark:hover:bg-[#1c2128] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
                 >
@@ -872,7 +911,30 @@ export function OnboardingWizard({ onComplete }: Props) {
                 )}
               </div>
 
-              {/* Progress bar — visible only while saving */}
+              {saveError && !saving && (
+                <div className="rounded-xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 p-3.5 animate-in fade-in duration-300">
+                  <div className="flex items-start gap-2.5">
+                    <AlertTriangle className="h-4 w-4 shrink-0 text-red-500 dark:text-red-400 mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-red-700 dark:text-red-300">
+                        Configuration failed
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-red-600 dark:text-red-400/90">
+                        {saveError}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSaveError(null)}
+                      className="shrink-0 text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-300"
+                    >
+                      <span className="sr-only">Dismiss</span>
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {saving && (
                 <div className="space-y-2 animate-in fade-in duration-300">
                   <div className="flex items-center justify-between">
@@ -898,7 +960,7 @@ export function OnboardingWizard({ onComplete }: Props) {
               <div className="flex items-center justify-between pt-1">
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => { setError(null); setStep(1); }}
+                    onClick={() => { setError(null); setSaveError(null); setStep(1); }}
                     disabled={saving}
                     className="flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-medium text-stone-500 dark:text-[#a8b0ba] hover:bg-stone-100 dark:hover:bg-[#1c2128] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
                   >
@@ -1048,10 +1110,38 @@ export function OnboardingWizard({ onComplete }: Props) {
                 </p>
               )}
 
+              {pairingPollError && !approved && (
+                <div className="flex items-center justify-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2">
+                  <AlertTriangle className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400 shrink-0" />
+                  <p className="text-[11px] text-amber-700 dark:text-amber-300">
+                    Could not reach gateway &mdash; retrying automatically
+                  </p>
+                </div>
+              )}
+
               {!approved && (
-                <p className="text-center text-[11px] text-stone-400 dark:text-[#3a424c]">
-                  Polling every 4s &middot; Codes expire after 1 hour
-                </p>
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+                    <p className="text-center text-[11px] text-stone-400 dark:text-[#3a424c]">
+                      Polling every 5s &middot; Codes expire after 1 hour
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => void fetchPairing(true)}
+                      disabled={pairingRefreshing}
+                      className="text-[11px] font-medium text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 disabled:opacity-50"
+                    >
+                      {pairingRefreshing ? "Checking…" : "Refresh"}
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={completeOnboarding}
+                    className="text-[11px] font-medium text-stone-400 dark:text-[#5a6270] underline underline-offset-2 hover:text-stone-600 dark:hover:text-[#a8b0ba] transition-colors"
+                  >
+                    Skip pairing, start chatting
+                  </button>
+                </div>
               )}
             </div>
           )}

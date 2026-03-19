@@ -1,18 +1,20 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { OnboardingWizard } from "@/components/onboarding-wizard";
 
 const isHosted =
   process.env.NEXT_PUBLIC_AGENTBAY_HOSTED === "true" ||
   process.env.AGENTBAY_HOSTED === "true";
 const AUTO_RETRY_SECONDS = 8;
+const POST_COMPLETE_GRACE_MS = 3000;
 
 export function SetupGate({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<{ hasModel: boolean; hasChannel: boolean; hasApiKey: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [retryIn, setRetryIn] = useState(AUTO_RETRY_SECONDS);
+  const completedRef = useRef(false);
 
   const fetchStatus = useCallback(async () => {
     setLoading(true);
@@ -49,7 +51,11 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
   }, [error, fetchStatus]);
 
   const handleComplete = useCallback(() => {
-    fetchStatus();
+    completedRef.current = true;
+    setTimeout(() => {
+      fetchStatus();
+      setTimeout(() => { completedRef.current = false; }, 2000);
+    }, POST_COMPLETE_GRACE_MS);
   }, [fetchStatus]);
 
   if (loading && !status) {
@@ -99,6 +105,10 @@ export function SetupGate({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     );
+  }
+
+  if (completedRef.current) {
+    return <>{children}</>;
   }
 
   if (status && (!status.hasModel || !status.hasApiKey)) {
