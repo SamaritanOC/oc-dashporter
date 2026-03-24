@@ -2,7 +2,6 @@ appId: one.seeker.samaritan
 productName: Samaritan
 executableName: samaritan
 copyright: Copyright 2026 SamaritanOC
-publish: never
 
 artifactName: samaritan-${version}-${arch}.${ext}
 
