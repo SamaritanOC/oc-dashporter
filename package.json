@@ -44,8 +44,8 @@
     "setup": "./setup.sh",
     "setup:dev": "./setup.sh --dev --no-service",
     "electron:dev": "NODE_ENV=development electron .",
-    "electron:build": "tsc -p tsconfig.electron.json && electron-builder --publish never",
-    "electron:compile": "tsc -p tsconfig.electron.json"
+    "electron:build": "tsc -p tsconfig.electron.json && cp electron/setup.html dist-electron/setup.html && electron-builder --publish never",
+    "electron:compile": "tsc -p tsconfig.electron.json && cp electron/setup.html dist-electron/setup.html"
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.88",
