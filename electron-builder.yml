@@ -1,9 +1,8 @@
-appId: one.seeker.samaritan
-productName: Samaritan
-executableName: samaritan
+appId: io.github.samaritanoc.oc-dashporter
+productName: OC Dashporter
+executableName: oc-dashporter
 copyright: Copyright 2026 SamaritanOC
-
-artifactName: samaritan-${version}-${arch}.${ext}
+artifactName: oc-dashporter-${version}-${arch}.${ext}
 
 directories:
   output: dist-app
@@ -18,8 +17,8 @@ linux:
     - deb
   category: Utility
   icon: build/icon.png
-  executableName: samaritan
-  description: Remote access to Samaritan intelligence platform
+  executableName: oc-dashporter
+  description: Native Linux desktop app for remote access to your OpenClaw installation
 
 deb:
   depends:
