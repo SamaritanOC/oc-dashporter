@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Samaritan — Connect</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f0f0f;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .card {
+      width: 420px;
+      padding: 40px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+    }
+    .logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .logo img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+    }
+    .logo h1 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .logo p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      text-align: center;
+    }
+    .field { margin-bottom: 16px; }
+    label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 6px;
+    }
+    input {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus { border-color: #7c3aed; }
+    input::placeholder { color: rgba(255,255,255,0.2); }
+    .btn {
+      width: 100%;
+      margin-top: 8px;
+      background: #7c3aed;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 11px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: #6d28d9; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .error {
+      margin-top: 12px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #f87171;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <img src="./icon.png" alt="Samaritan" onerror="this.style.display='none'" />
+      <h1>Samaritan</h1>
+      <p>Enter your gateway details to connect</p>
+    </div>
+
+    <div class="field">
+      <label>Gateway URL</label>
+      <input type="text" id="url" placeholder="https://your-tailscale-hostname" />
+    </div>
+
+    <div class="field">
+      <label>Gateway Token</label>
+      <input type="password" id="token" placeholder="Your gateway auth token" />
+    </div>
+
+    <button class="btn" id="btn" onclick="connect()">Connect to Samaritan</button>
+    <div class="error" id="error"></div>
+  </div>
+
+  <script>
+    // Pre-fill if already stored
+    window.samaritan?.store.getAll().then(s => {
+      if (s.gatewayUrl) document.getElementById('url').value = s.gatewayUrl
+      if (s.gatewayToken) document.getElementById('token').value = s.gatewayToken
+    })
+
+    async function connect() {
+      const url = document.getElementById('url').value.trim()
+      const token = document.getElementById('token').value.trim()
+      const btn = document.getElementById('btn')
+      const err = document.getElementById('error')
+
+      if (!url || !token) return
+
+      btn.disabled = true
+      btn.textContent = 'Connecting...'
+      err.style.display = 'none'
+
+      const result = await window.samaritan.connect(url, token)
+
+      if (result.ok) {
+        btn.textContent = 'Connected!'
+      } else {
+        btn.disabled = false
+        btn.textContent = 'Connect to Samaritan'
+        err.style.display = 'block'
+        err.textContent = result.error || 'Connection failed'
+      }
+    }
+  </script>
+</body>
+</html>
