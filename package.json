@@ -44,8 +44,8 @@
     "setup": "./setup.sh",
     "setup:dev": "./setup.sh --dev --no-service",
     "electron:dev": "NODE_ENV=development electron .",
-    "electron:build": "tsc -p tsconfig.electron.json && cp electron/setup.html dist-electron/setup.html && electron-builder --publish never",
-    "electron:compile": "tsc -p tsconfig.electron.json && cp electron/setup.html dist-electron/setup.html"
+    "electron:build": "tsc -p tsconfig.electron.json && electron-builder --publish never",
+    "electron:compile": "tsc -p tsconfig.electron.json"
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.88",
@@ -60,7 +60,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dagre": "^0.8.5",
-    "electron-store": "^8.2.0",
     "lucide-react": "^0.564.0",
     "marked": "^17.0.2",
     "next": "16.1.6",
