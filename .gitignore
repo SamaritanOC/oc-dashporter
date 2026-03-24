@@ -1,52 +1,26 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# testing
-/coverage
-/playwright-report
-/playwright/.cache
-.playwright-mcp/
-/test-results
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
+node_modules/
+dist-electron/
+dist-app/
+src/
+.next/
 .env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
+*.log
+bin/
+public/file.svg
+public/globe.svg
+public/icons/
+public/manifest.json
+public/next.svg
+public/sw.js
+public/vercel.svg
+public/window.svg
+components.json
+eslint.config.mjs
+instrumentation.ts
+next.config.ts
 next-env.d.ts
-
-# Others
-*.md
-.claude/
-*.png
-/e2e/
-.playwright-cli/
+.npmignore
+playwright.config.ts
+postcss.config.mjs
+setup.sh
+tsconfig.json

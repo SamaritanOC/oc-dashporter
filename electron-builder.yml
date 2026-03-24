@@ -1,0 +1,34 @@
+appId: one.seeker.samaritan
+productName: Samaritan
+executableName: samaritan
+copyright: Copyright 2026 SamaritanOC
+
+artifactName: samaritan-${version}-${arch}.${ext}
+
+directories:
+  output: dist-app
+  buildResources: build
+
+files:
+  - dist-electron/**/*
+  - public/icon.png
+
+linux:
+  target:
+    - deb
+  category: Utility
+  icon: build/icon.png
+  executableName: samaritan
+  description: Remote access to Samaritan intelligence platform
+
+deb:
+  depends:
+    - libgtk-3-0
+    - libnotify4
+    - libnss3
+    - libxss1
+    - libxtst6
+    - xdg-utils
+    - libatspi2.0-0
+    - libdrm2
+    - libgbm1
