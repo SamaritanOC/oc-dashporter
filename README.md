@@ -97,3 +97,7 @@ If you do not see a pending device, confirm your gateway URL is correct and that
 
 ## License
 MIT
+
+## Support The Samaritan Project 
+
+This is an active, build-in-public project focused on developing replicable, private agentic AI infrastructure that can be deployed across any industry or use case. If you're interested in where local-first AI is headed, and want to support the hardware and infrastructure that makes this possible, follow along and contribute at buymeacoffee.com/thesamaritanproject
