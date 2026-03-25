@@ -15,6 +15,7 @@ files:
 linux:
   target:
     - deb
+    - AppImage
   category: Utility
   icon: build/icon.png
   executableName: oc-dashporter

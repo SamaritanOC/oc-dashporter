@@ -38,10 +38,16 @@ jobs:
         run: |
           find dist-app -name "*.deb" | head -1 | xargs -I{} cp {} dist-app/oc-dashporter-amd64.deb
 
+      - name: Rename AppImage for release
+        run: |
+          find dist-app -name "*.AppImage" | head -1 | xargs -I{} cp {} dist-app/oc-dashporter-amd64.AppImage
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist-app/oc-dashporter-amd64.deb
+          files: |
+            dist-app/oc-dashporter-amd64.deb
+            dist-app/oc-dashporter-amd64.AppImage
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
