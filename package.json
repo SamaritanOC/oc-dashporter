@@ -1,6 +1,6 @@
 {
   "name": "oc-dashporter",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "dist-electron/main.js",
   "description": "Native Linux desktop app for remote access to your OpenClaw installation over Tailscale",
   "keywords": [
