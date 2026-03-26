@@ -1,3 +1,8 @@
+publish:
+  provider: github
+  owner: SamaritanOC
+  repo: oc-dashporter
+
 appId: io.github.samaritanoc.oc-dashporter
 productName: OC Dashporter
 executableName: oc-dashporter

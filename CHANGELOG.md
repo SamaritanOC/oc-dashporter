@@ -2,6 +2,12 @@
 
 All notable changes to OC Dashporter are documented here.
 
+## [Unreleased]
+
+### Added
+- Auto-updater via `electron-updater` — app checks for new versions on launch, downloads silently in the background, and prompts to restart when ready
+- Update also installable manually at any time via `wget` + `dpkg -i` — both methods work independently
+
 ## [1.0.1] - 2026-03-26
 
 ### Security

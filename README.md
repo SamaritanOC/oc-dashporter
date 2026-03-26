@@ -60,13 +60,16 @@ See [CHANGELOG.md](./CHANGELOG.md) for the full version history and release note
 
 ## Updating
 
-To update to the latest version, re-run the install commands:
+### Automatic (recommended)
+OC Dashporter checks for updates automatically on every launch. When a new version is available it downloads in the background and prompts you to restart to apply it. No terminal required.
+
+### Manual
+You can also update at any time by re-running the install commands:
 ```bash
 wget https://github.com/SamaritanOC/oc-dashporter/releases/latest/download/oc-dashporter-amd64.deb
 sudo dpkg -i oc-dashporter-amd64.deb
 ```
-
-Your pairing and settings are preserved across updates — no re-pairing required.
+Both methods are equivalent — your pairing and settings are preserved either way, no re-pairing required.
 
 ## First launch
 1. Open OC Dashporter from your application menu
@@ -116,13 +119,6 @@ If you do not see a pending device, confirm your gateway URL is correct and that
 
 ## License
 MIT
-
-### Updating from v1.0.0
-```bash
-wget https://github.com/SamaritanOC/oc-dashporter/releases/latest/download/oc-dashporter-amd64.deb
-sudo dpkg -i oc-dashporter-amd64.deb
-```
-Your pairing and settings are preserved — no re-pairing required.
 
 ## Support The Samaritan Project 
 

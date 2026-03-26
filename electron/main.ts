@@ -1,8 +1,39 @@
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, shell, dialog } from 'electron'
+import { autoUpdater } from 'electron-updater'
 
 const GATEWAY_ORIGIN = 'http://127.0.0.1:18789'
 
 let mainWindow: BrowserWindow | null = null
+
+function initAutoUpdater() {
+  autoUpdater.autoDownload = true
+  autoUpdater.autoInstallOnAppQuit = true
+
+  autoUpdater.on('update-available', () => {
+    dialog.showMessageBox({
+      type: 'info',
+      title: 'Update available',
+      message: 'A new version of OC Dashporter is downloading in the background. You will be notified when it is ready to install.'
+    })
+  })
+
+  autoUpdater.on('update-downloaded', () => {
+    dialog.showMessageBox({
+      type: 'info',
+      title: 'Update ready',
+      message: 'Update downloaded. OC Dashporter will update when you next quit the app.',
+      buttons: ['Restart now', 'Later']
+    }).then(result => {
+      if (result.response === 0) autoUpdater.quitAndInstall()
+    })
+  })
+
+  autoUpdater.on('error', (err) => {
+    console.error('Auto-updater error:', err)
+  })
+
+  autoUpdater.checkForUpdatesAndNotify()
+}
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
@@ -22,8 +53,6 @@ async function createWindow() {
     }
   })
 
-  // Block navigation outside the local gateway origin —
-  // external links open in the system browser instead.
   mainWindow.webContents.on('will-navigate', (event, url) => {
     const target = new URL(url)
     const allowed = new URL(GATEWAY_ORIGIN)
@@ -33,8 +62,6 @@ async function createWindow() {
     }
   })
 
-  // Deny all new-window requests from inside the Control UI;
-  // route them to the system browser.
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)
     return { action: 'deny' }
@@ -45,6 +72,9 @@ async function createWindow() {
   mainWindow.on('closed', () => { mainWindow = null })
 }
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  createWindow()
+  initAutoUpdater()
+})
+
 app.on('window-all-closed', () => app.quit())
-// Note: 'activate' is macOS-only — removed, this app is Linux-only.

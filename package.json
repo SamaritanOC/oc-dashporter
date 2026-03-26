@@ -48,6 +48,7 @@
     "electron:compile": "tsc -p tsconfig.electron.json"
   },
   "dependencies": {
+    "electron-updater": "^6.3.9",
     "@ai-sdk/react": "^3.0.88",
     "@base-ui/react": "^1.2.0",
     "@monaco-editor/react": "^4.7.0",
