@@ -49,6 +49,23 @@ npm run electron:build
 sudo dpkg -i dist-app/oc-dashporter-*-amd64.deb
 ```
 
+## Versions
+
+| Version | Notes |
+|---------|-------|
+| [1.0.1](https://github.com/SamaritanOC/oc-dashporter/releases/tag/v1.0.1) | Security hardening — sandbox, navigation lock, new-window deny |
+| [1.0.0](https://github.com/SamaritanOC/oc-dashporter/releases/tag/v1.0.0) | Initial release |
+
+## Updating
+
+To update to the latest version, re-run the install commands:
+```bash
+wget https://github.com/SamaritanOC/oc-dashporter/releases/latest/download/oc-dashporter-amd64.deb
+sudo dpkg -i oc-dashporter-amd64.deb
+```
+
+Your pairing and settings are preserved across updates — no re-pairing required.
+
 ## First launch
 1. Open OC Dashporter from your application menu
 2. Enter your gateway URL (e.g. https://your-machine.tailnet-name.ts.net)
