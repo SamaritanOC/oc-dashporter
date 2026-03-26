@@ -51,10 +51,12 @@ sudo dpkg -i dist-app/oc-dashporter-*-amd64.deb
 
 ## Versions
 
-| Version | Notes |
-|---------|-------|
-| [1.0.1](https://github.com/SamaritanOC/oc-dashporter/releases/tag/v1.0.1) | Security hardening — sandbox, navigation lock, new-window deny |
-| [1.0.0](https://github.com/SamaritanOC/oc-dashporter/releases/tag/v1.0.0) | Initial release |
+See [CHANGELOG.md](./CHANGELOG.md) for the full version history and release notes.
+
+| Version | Date | Notes |
+|---------|------|-------|
+| [1.0.1](https://github.com/SamaritanOC/oc-dashporter/releases/tag/v1.0.1) | 2026-03-26 | Security hardening |
+| [1.0.0](https://github.com/SamaritanOC/oc-dashporter/releases/tag/v1.0.0) | 2026-03-01 | Initial release |
 
 ## Updating
 
