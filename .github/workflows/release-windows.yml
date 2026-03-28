@@ -3,7 +3,7 @@ name: Build and Release (Windows)
 on:
   push:
     tags:
-      - 'windows-v*'
+      - 'v*'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -26,8 +26,6 @@ jobs:
       - name: Build Next.js app
         run: npm run build
         env:
-          # Redirect user profile vars so @vercel/nft and webpack don't scan
-          # Windows junction points (e.g. 'Application Data') in the real home dir
           USERPROFILE: ${{ github.workspace }}
           APPDATA: ${{ github.workspace }}
           HOME: ${{ github.workspace }}
@@ -38,10 +36,10 @@ jobs:
       - name: Build Windows installer
         run: npx electron-builder --win --config windows/electron-builder.yml --publish never
 
-      - name: Create GitHub Release
+      - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: dist-app/oc-dashporter-windows-setup.exe
-          generate_release_notes: true
+          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

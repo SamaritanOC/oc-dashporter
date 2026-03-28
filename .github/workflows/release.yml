@@ -1,9 +1,9 @@
-name: Build and Release
+name: Build and Release (Linux)
 
 on:
   push:
     tags:
-      - 'linux-v*'
+      - 'v*'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -54,7 +54,7 @@ jobs:
           echo "$BODY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Create GitHub Release
+      - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
