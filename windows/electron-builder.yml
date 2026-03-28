@@ -2,7 +2,7 @@ appId: io.github.samaritanoc.oc-dashporter
 productName: OC Dashporter
 executableName: oc-dashporter
 copyright: Copyright 2026 SamaritanOC
-artifactName: oc-dashporter-windows-${version}-${arch}.${ext}
+artifactName: oc-dashporter-windows-setup.${ext}
 
 directories:
   output: dist-app

@@ -3,7 +3,7 @@ name: Build and Release (Windows)
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*-windows'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -35,7 +35,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: windows/dist-app/oc-dashporter-windows-*.exe
+          files: windows/dist-app/oc-dashporter-windows-setup.exe
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
