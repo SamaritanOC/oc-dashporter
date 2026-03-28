@@ -1,0 +1,62 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'linux-v*'
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pil fakeroot dpkg
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Build Electron app
+        run: npm run electron:build
+
+      - name: List dist-app contents
+        run: ls -la dist-app/
+
+      - name: Rename deb for release
+        run: |
+          find dist-app -name "*.deb" | head -1 | xargs -I{} cp {} dist-app/oc-dashporter-amd64.deb
+
+      - name: Rename AppImage for release
+        run: |
+          find dist-app -name "*.AppImage" | head -1 | xargs -I{} cp {} dist-app/oc-dashporter-amd64.AppImage
+
+      - name: Extract changelog for this version
+        id: changelog
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          BODY=$(awk "/^## \[$VERSION\]/{found=1; next} found && /^## \[/{exit} found{print}" CHANGELOG.md)
+          echo "BODY<<EOF" >> $GITHUB_OUTPUT
+          echo "$BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist-app/oc-dashporter-amd64.deb
+            dist-app/oc-dashporter-amd64.AppImage
+          body: ${{ steps.changelog.outputs.BODY }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

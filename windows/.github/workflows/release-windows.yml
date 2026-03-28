@@ -1,0 +1,38 @@
+name: Build and Release (Windows)
+
+on:
+  push:
+    tags:
+      - 'windows-v*'
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Compile Windows Electron main
+        run: npx tsc -p windows/tsconfig.electron.json
+
+      - name: Build Windows installer
+        run: npx electron-builder --win --config windows/electron-builder.yml --publish never
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist-app/oc-dashporter-windows-setup.exe
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
