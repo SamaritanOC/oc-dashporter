@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, shell, session } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import * as path from 'path'
 import * as fs from 'fs'
@@ -50,6 +50,20 @@ function startUiServer(): Promise<void> {
   })
 }
 
+// Rewrite the Origin header on WebSocket connections so the gateway sees its
+// own hostname as the origin — matching what's already in allowedOrigins config.
+function installOriginRewriter() {
+  session.defaultSession.webRequest.onBeforeSendHeaders(
+    { urls: ['ws://*/*', 'wss://*/*'] },
+    (details, callback) => {
+      const url = new URL(details.url)
+      const protocol = url.protocol === 'wss:' ? 'https' : 'http'
+      details.requestHeaders['Origin'] = `${protocol}://${url.hostname}`
+      callback({ requestHeaders: details.requestHeaders })
+    }
+  )
+}
+
 function initAutoUpdater() {
   autoUpdater.autoDownload = true
   autoUpdater.autoInstallOnAppQuit = true
@@ -85,6 +99,7 @@ async function createWindow() {
 }
 
 app.whenReady().then(() => {
+  installOriginRewriter()
   createWindow()
   if (app.isPackaged) initAutoUpdater()
 })
