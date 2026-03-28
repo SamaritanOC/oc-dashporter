@@ -8,7 +8,7 @@ OC Dashporter installs your fully functional, default OpenClaw Mission Control d
 
 | OS | Download |
 |---|---|
-| Linux (Debian/Ubuntu/Parrot) | [oc-dashporter-amd64.deb](https://github.com/SamaritanOC/oc-dashporter/releases/download/linux-v1.0.3/oc-dashporter-amd64.deb) |
+| Linux (Debian/Ubuntu/Parrot) | [oc-dashporter-amd64.deb](https://github.com/SamaritanOC/oc-dashporter/releases/latest/download/oc-dashporter-amd64.deb) |
 | Windows 11 | [oc-dashporter-windows-setup.exe](https://github.com/SamaritanOC/oc-dashporter/releases/latest/download/oc-dashporter-windows-setup.exe) |
 
 For Windows installation instructions see [windows/README.md](windows/README.md).
