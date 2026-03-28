@@ -15,7 +15,14 @@ directories:
 
 files:
   - dist-electron/**/*
-  - public/icon.png
+  - .next/**/*
+  - public/**/*
+  - node_modules/**/*
+
+asarUnpack:
+  - .next/**/*
+  - public/**/*
+  - node_modules/**/*
 
 linux:
   target:
