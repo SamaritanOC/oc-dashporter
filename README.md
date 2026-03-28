@@ -52,20 +52,20 @@ Add this to your openclaw.json gateway block:
 
 ### Installation
 
-**First time only:** install GDebi so `.deb` files open with a click:
-```bash
-sudo apt install gdebi
-```
+**Option 1 — click to install:** download `oc-dashporter-amd64.deb` and double-click it. Your software center will open and install it.
 
-Then download `oc-dashporter-amd64.deb` and double-click it. Click **Install Package** in the window that opens.
+**Option 2 — command line:**
+```bash
+sudo apt install ./oc-dashporter-amd64.deb
+```
 
 ### Updating
 
 #### Automatic (recommended)
-OC Dashporter checks for updates automatically on every launch. When a new version is available it downloads in the background and prompts you to restart to apply it. No terminal required.
+OC Dashporter checks for updates automatically on every launch. When a new version is available it downloads in the background and prompts you to restart to apply it.
 
 #### Manual
-Download the latest `.deb` from the [releases page](https://github.com/SamaritanOC/oc-dashporter/releases) and double-click to install.
+Download the latest `.deb` from the [releases page](https://github.com/SamaritanOC/oc-dashporter/releases) and install using either option above.
 
 ### First launch
 
