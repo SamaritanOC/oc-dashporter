@@ -2,7 +2,7 @@
 
 A native desktop app for remote access to your [OpenClaw](https://openclaw.ai) installation.
 
-OC Dashporter wraps the OpenClaw built-in Control UI in an Electron shell, giving you a proper installable app with persistent authentication — no browser, no token prompts, no storage clearing.
+OC Dashporter installs your fully functional, default OpenClaw Mission Control dashboard on a remote Windows or Linux computer. 
 
 ## Download
 
