@@ -11,9 +11,6 @@ env:
 jobs:
   build:
     runs-on: windows-latest
-    defaults:
-      run:
-        working-directory: windows
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,25 +20,22 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install Node dependencies
+      - name: Install dependencies
         run: npm install
 
       - name: Build Next.js app
         run: npm run build
 
-      - name: Compile Electron main
-        run: npx tsc -p tsconfig.electron.json
-
-      - name: Verify compile output
-        run: dir dist-electron
+      - name: Compile Windows Electron main
+        run: npx tsc -p windows/tsconfig.electron.json
 
       - name: Build Windows installer
-        run: npx electron-builder --win --publish never
+        run: npx electron-builder --win --config windows/electron-builder.yml --publish never
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: windows/dist-app/oc-dashporter-windows-setup.exe
+          files: dist-app/oc-dashporter-windows-setup.exe
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

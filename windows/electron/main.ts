@@ -41,7 +41,6 @@ function initAutoUpdater() {
 }
 
 function getUnpackedPath(): string {
-  // asarUnpack'd files live in app.asar.unpacked alongside the asar
   return path.join(process.resourcesPath, 'app.asar.unpacked')
 }
 
@@ -67,8 +66,6 @@ async function waitForPort(port: number, timeoutMs = 60000): Promise<void> {
 
 function startNextServer(): Promise<void> {
   const appRoot = getUnpackedPath()
-  // Use Electron's own Node.js runtime with ELECTRON_RUN_AS_NODE=1 — avoids
-  // shell quoting issues when the install path contains spaces on Windows
   const nextEntry = path.join(appRoot, 'node_modules', 'next', 'dist', 'bin', 'next')
 
   nextServer = spawn(process.execPath, [nextEntry, 'start', '-H', '127.0.0.1', '-p', String(GATEWAY_PORT)], {
