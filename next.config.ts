@@ -12,6 +12,8 @@ function git(cmd: string): string {
 
 const nextConfig: NextConfig = {
   turbopack: {},
+  // Prevent Next.js from tracing files above the project root on Windows
+  outputFileTracingRoot: path.resolve(__dirname),
   env: {
     NEXT_PUBLIC_APP_VERSION: git("describe --tags --always") || "dev",
     NEXT_PUBLIC_COMMIT_HASH: git("rev-parse --short HEAD") || "unknown",
