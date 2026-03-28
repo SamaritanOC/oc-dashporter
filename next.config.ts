@@ -30,10 +30,11 @@ const nextConfig: NextConfig = {
       ],
     },
   ],
-  // Pin module resolution to the project root — prevents webpack from walking
-  // up into system directories on Windows (e.g. Application Data junction points)
+  // Prevent webpack from following Windows junction points into system directories
+  // (e.g. 'Application Data' junction in user home that triggers EPERM on scandir)
   webpack: (config, { dir }) => {
     config.resolve.modules = [path.join(dir, "node_modules")];
+    config.resolve.symlinks = false;
     return config;
   },
 };
