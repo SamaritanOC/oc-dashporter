@@ -24,7 +24,7 @@ Windows Laptop
 ## Installation
 
 1. Download the latest installer:
-   [oc-dashporter-setup.exe](https://github.com/SamaritanOC/oc-dashporter/releases/latest/download/oc-dashporter-setup.exe)
+   [oc-dashporter-windows-setup.exe](https://github.com/SamaritanOC/oc-dashporter/releases/latest/download/oc-dashporter-windows-setup.exe)
 
 2. Run the installer and follow the setup wizard
 3. Choose your installation directory (or leave as default)
