@@ -1,4 +1,4 @@
-![RemoteClaw for Linux](https://labb.run/wp-content/uploads/2026/03/Mission-Control.png)
+![RemoteClaw for Linux](https://labb.run/wp-content/uploads/2026/03/Linux-App-Update.png)
 
 # RemoteClaw for Linux
 
@@ -60,6 +60,7 @@ Add this to your openclaw.json gateway block:
 ```bash
 sudo apt install ./remoteclaw-amd64.deb
 ```
+![RemoteClaw for Linux](https://labb.run/wp-content/uploads/2026/03/Mission-Control.png)
 
 ### Updating
 
