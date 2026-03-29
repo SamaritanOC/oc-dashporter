@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to OC Dashporter are documented here.
+All notable changes to RemoteClaw for Linux are documented here.
 
 ## [1.0.2] - 2026-03-26
 
