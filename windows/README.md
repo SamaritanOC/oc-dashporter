@@ -1,6 +1,6 @@
 ![RemoteClaw for Windows](https://labb.run/wp-content/uploads/2026/03/MissionControl_Windows.png)
 
-# RemoteClaw for Windows
+# 🦞 RemoteClaw for Windows
 
 A native Windows desktop app for remote access to your [OpenClaw](https://openclaw.ai) installation.
 
