@@ -3,11 +3,11 @@ publish:
   owner: SamaritanOC
   repo: oc-dashporter
 
-appId: io.github.samaritanoc.oc-dashporter-windows
-productName: OC Dashporter for Windows
-executableName: oc-dashporter-windows
+appId: io.github.samaritanoc.remoteclaw
+productName: RemoteClaw for Windows
+executableName: RemoteClaw
 copyright: Copyright 2026 SamaritanOC
-artifactName: oc-dashporter-windows-setup.${ext}
+artifactName: remoteclaw-windows-setup.${ext}
 
 extraMetadata:
   main: windows/dist-electron/main.js
@@ -33,4 +33,4 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  shortcutName: OC Dashporter for Windows
+  shortcutName: RemoteClaw for Windows

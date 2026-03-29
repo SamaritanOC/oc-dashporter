@@ -32,16 +32,16 @@ jobs:
         run: npm run electron:build
 
       - name: Rename deb for release
-        run: find dist-app -name "*.deb" | head -1 | xargs -I{} cp {} dist-app/oc-dashporter-amd64.deb
+        run: find dist-app -name "*.deb" | head -1 | xargs -I{} cp {} dist-app/remoteclaw-amd64.deb
 
       - name: Rename AppImage for release
-        run: find dist-app -name "*.AppImage" | head -1 | xargs -I{} cp {} dist-app/oc-dashporter-amd64.AppImage
+        run: find dist-app -name "*.AppImage" | head -1 | xargs -I{} cp {} dist-app/remoteclaw-amd64.AppImage
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist-app/oc-dashporter-amd64.deb
-            dist-app/oc-dashporter-amd64.AppImage
+            dist-app/remoteclaw-amd64.deb
+            dist-app/remoteclaw-amd64.AppImage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

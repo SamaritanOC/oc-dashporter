@@ -1,17 +1,17 @@
-![Dashporter](https://labb.run/wp-content/uploads/2026/03/Mission-Control.png)
+![RemoteClaw for Linux](https://labb.run/wp-content/uploads/2026/03/Mission-Control.png)
 
-# OC Dashporter
+# RemoteClaw for Linux
 
 A native desktop app for remote access to your [OpenClaw](https://openclaw.ai) installation.
 
-OC Dashporter installs your fully functional, default OpenClaw Mission Control dashboard on a remote Windows or Linux computer.
+RemoteClaw for Linux installs your fully functional, default OpenClaw Mission Control dashboard on a remote Windows or Linux computer.
 
 ## Download
 
 | OS | Download |
 |---|---|
-| Linux (Debian/Ubuntu/Parrot) | [oc-dashporter-amd64.deb](https://github.com/SamaritanOC/oc-dashporter/releases/latest/download/oc-dashporter-amd64.deb) |
-| Windows 11 | [oc-dashporter-windows-setup.exe](https://github.com/SamaritanOC/oc-dashporter/releases/latest/download/oc-dashporter-windows-setup.exe) |
+| Linux (Debian/Ubuntu/Parrot) | [remoteclaw-amd64.deb](https://github.com/SamaritanOC/remoteclaw/releases/latest/download/remoteclaw-amd64.deb) |
+| Windows 11 | [remoteclaw-windows-setup.exe](https://github.com/SamaritanOC/remoteclaw/releases/latest/download/remoteclaw-windows-setup.exe) |
 
 For Windows installation instructions see [windows/README.md](windows/README.md).
 
@@ -21,10 +21,10 @@ For Windows installation instructions see [windows/README.md](windows/README.md)
 
 ### How it works
 
-OC Dashporter connects directly to your OpenClaw gateway over your Tailscale network. Your gateway runs on your home machine as normal. The app is just a secure native window into it from anywhere.
+RemoteClaw for Linux connects directly to your OpenClaw gateway over your Tailscale network. Your gateway runs on your home machine as normal. The app is just a secure native window into it from anywhere.
 ```
 Road Laptop
-└── OC Dashporter
+└── RemoteClaw for Linux
     └── Tailscale → Your OpenClaw gateway
                     └── All agents, models, memory, sessions
 ```
@@ -54,24 +54,24 @@ Add this to your openclaw.json gateway block:
 
 ### Installation
 
-**Option 1 — click to install:** download `oc-dashporter-amd64.deb` and double-click it. Your software center will open and install it.
+**Option 1 — click to install:** download `remoteclaw-amd64.deb` and double-click it. Your software center will open and install it.
 
 **Option 2 — command line:**
 ```bash
-sudo apt install ./oc-dashporter-amd64.deb
+sudo apt install ./remoteclaw-amd64.deb
 ```
 
 ### Updating
 
 #### Automatic (recommended)
-OC Dashporter checks for updates automatically on every launch. When a new version is available it downloads in the background and prompts you to restart to apply it.
+RemoteClaw for Linux checks for updates automatically on every launch. When a new version is available it downloads in the background and prompts you to restart to apply it.
 
 #### Manual
-Download the latest `.deb` from the [releases page](https://github.com/SamaritanOC/oc-dashporter/releases) and install using either option above.
+Download the latest `.deb` from the [releases page](https://github.com/SamaritanOC/remoteclaw/releases) and install using either option above.
 
 ### First launch
 
-1. Open OC Dashporter
+1. Open RemoteClaw for Linux
 2. Enter your gateway URL (e.g. https://your-machine.tailnet-name.ts.net)
 3. Enter your gateway token (found in ~/.openclaw/openclaw.json under gateway.auth.token)
 4. Click Connect
@@ -87,30 +87,30 @@ Pairing is a one-time step per device. After that the app connects automatically
 
 #### Display / Wayland issues
 
-OC Dashporter is an Electron app. On Linux systems running Wayland, the app may fail to launch or render a blank window.
+RemoteClaw for Linux is an Electron app. On Linux systems running Wayland, the app may fail to launch or render a blank window.
 
 **Fix — force XWayland mode:**
 ```bash
-./oc-dashporter-amd64.AppImage --ozone-platform=x11
+./remoteclaw-amd64.AppImage --ozone-platform=x11
 ```
 
 Or set it permanently by editing your launcher/desktop entry to include `--ozone-platform=x11` in the `Exec=` line.
 
 On GNOME + Wayland, you can also try:
 ```bash
-GDK_BACKEND=x11 ./oc-dashporter-amd64.AppImage
+GDK_BACKEND=x11 ./remoteclaw-amd64.AppImage
 ```
 
 #### Pairing approval
 
-When you open OC Dashporter for the first time and enter your gateway URL and token, the gateway registers a new device and waits for operator approval.
+When you open RemoteClaw for Linux for the first time and enter your gateway URL and token, the gateway registers a new device and waits for operator approval.
 
 **To approve:**
 1. Open Mission Control or the OpenClaw webchat on your gateway host
 2. Go to **Devices** — you will see a pending device entry
 3. Approve it
 
-Pairing codes expire after **1 hour**. If approval times out, close DashPorter, reopen it, and approve the new pairing request before the hour is up.
+Pairing codes expire after **1 hour**. If approval times out, close RemoteClaw for Linux, reopen it, and approve the new pairing request before the hour is up.
 
 If you do not see a pending device, confirm your gateway URL is correct and that Tailscale is connected on both machines.
 

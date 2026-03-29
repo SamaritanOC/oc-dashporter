@@ -77,7 +77,7 @@ async function createWindow() {
     height: 900,
     minWidth: 900,
     minHeight: 600,
-    title: 'OC Dashporter',
+    title: 'RemoteClaw for Windows',
     backgroundColor: '#0f0f0f',
     webPreferences: {
       contextIsolation: true,

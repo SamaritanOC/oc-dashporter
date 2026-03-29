@@ -3,11 +3,11 @@ publish:
   owner: SamaritanOC
   repo: oc-dashporter
 
-appId: io.github.samaritanoc.oc-dashporter
-productName: OC Dashporter
-executableName: oc-dashporter
+appId: io.github.samaritanoc.remoteclaw
+productName: RemoteClaw for Linux
+executableName: remoteclaw
 copyright: Copyright 2026 SamaritanOC
-artifactName: oc-dashporter-${version}-${arch}.${ext}
+artifactName: remoteclaw-${version}-${arch}.${ext}
 
 directories:
   output: dist-app
@@ -26,8 +26,8 @@ linux:
     - AppImage
   category: Utility
   icon: build/icon.png
-  executableName: oc-dashporter
-  description: Native Linux desktop app for remote access to your OpenClaw installation
+  executableName: remoteclaw
+  description: Native Linux desktop app for RemoteClaw for Linux — remote access to your OpenClaw installation
 
 deb:
   depends:
